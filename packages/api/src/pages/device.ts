@@ -18,7 +18,7 @@ const PAGE_HTML = `<!DOCTYPE html>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #111111;
+      background: #0D1219;
       color: #e5e5e5;
       font-family: "Quattrocento Sans", sans-serif;
       min-height: 100vh;
@@ -26,6 +26,17 @@ const PAGE_HTML = `<!DOCTYPE html>
       align-items: center;
       justify-content: center;
       padding: 1rem;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: url("/auth-bg.webp") center center / cover no-repeat;
+      opacity: 0.08;
+      pointer-events: none;
+      z-index: 0;
     }
 
     h1, h2, h3 {
@@ -39,6 +50,8 @@ const PAGE_HTML = `<!DOCTYPE html>
     .container {
       width: 100%;
       max-width: 440px;
+      position: relative;
+      z-index: 1;
     }
 
     .brand {
@@ -46,39 +59,26 @@ const PAGE_HTML = `<!DOCTYPE html>
       margin-bottom: 2rem;
     }
 
-    .brand .logo-placeholder {
-      width: 56px;
-      height: 56px;
-      border-radius: 12px;
-      background: #1a1a1a;
-      border: 1px dashed #333;
+    .brand .wordmark {
+      height: 40px;
       margin: 0 auto 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-    }
-
-    .brand h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #22c55e;
-      letter-spacing: 0.02em;
+      display: block;
     }
 
     .brand .subtitle {
-      color: #737373;
+      color: #7a8a9e;
       font-size: 0.85rem;
       margin-top: 0.25rem;
       font-family: "Inconsolata", monospace;
     }
 
     .card {
-      background: #1a1a1a;
-      border: 1px solid #262626;
+      background: #1E2D4A;
+      border: 1px solid #2a3d5a;
       border-radius: 12px;
       padding: 2rem;
       position: relative;
+      overflow: hidden;
     }
 
     .state { display: none; }
@@ -93,7 +93,7 @@ const PAGE_HTML = `<!DOCTYPE html>
     }
 
     .state > p.desc {
-      color: #a3a3a3;
+      color: #9aabbc;
       font-size: 0.9rem;
       margin-bottom: 1.5rem;
       line-height: 1.5;
@@ -104,8 +104,8 @@ const PAGE_HTML = `<!DOCTYPE html>
     input[type="password"] {
       display: block;
       width: 100%;
-      background: #111111;
-      border: 1px solid #333;
+      background: #0D1219;
+      border: 1px solid #2a3d5a;
       border-radius: 8px;
       padding: 0.75rem 1rem;
       color: #e5e5e5;
@@ -117,11 +117,11 @@ const PAGE_HTML = `<!DOCTYPE html>
     }
 
     input:focus {
-      border-color: #22c55e;
+      border-color: #2EFFD1;
     }
 
     input::placeholder {
-      color: #525252;
+      color: #4a5d73;
     }
 
     .code-input {
@@ -149,21 +149,21 @@ const PAGE_HTML = `<!DOCTYPE html>
     button:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .btn-primary {
-      background: #22c55e;
-      color: #111111;
+      background: #EF9F28;
+      color: #0D1219;
     }
 
     .btn-secondary {
       background: transparent;
-      border: 1px solid #333;
+      border: 1px solid #2a3d5a;
       color: #e5e5e5;
       margin-top: 0.5rem;
     }
 
     .btn-danger {
       background: transparent;
-      border: 1px solid #dc2626;
-      color: #dc2626;
+      border: 1px solid #C47830;
+      color: #C47830;
       margin-top: 0.5rem;
     }
 
@@ -177,8 +177,8 @@ const PAGE_HTML = `<!DOCTYPE html>
     }
 
     .code-display {
-      background: #111111;
-      border: 1px solid #333;
+      background: #0D1219;
+      border: 1px solid #2a3d5a;
       border-radius: 8px;
       padding: 1.25rem;
       text-align: center;
@@ -186,29 +186,29 @@ const PAGE_HTML = `<!DOCTYPE html>
       font-size: 2rem;
       font-weight: 700;
       letter-spacing: 0.25em;
-      color: #22c55e;
+      color: #2EFFD1;
       margin-bottom: 1.25rem;
     }
 
     .meta {
-      color: #737373;
+      color: #7a8a9e;
       font-size: 0.85rem;
       margin-bottom: 0.5rem;
     }
 
     .meta strong {
-      color: #a3a3a3;
+      color: #b0c4de;
     }
 
     .toggle {
       text-align: center;
-      color: #737373;
+      color: #7a8a9e;
       font-size: 0.85rem;
       margin-top: 1rem;
     }
 
     .toggle a {
-      color: #22c55e;
+      color: #2EFFD1;
       text-decoration: none;
       font-weight: 700;
     }
@@ -216,11 +216,11 @@ const PAGE_HTML = `<!DOCTYPE html>
     .toggle a:hover { text-decoration: underline; }
 
     .error-msg {
-      background: rgba(220, 38, 38, 0.1);
-      border: 1px solid rgba(220, 38, 38, 0.3);
+      background: rgba(196, 120, 48, 0.15);
+      border: 1px solid rgba(196, 120, 48, 0.4);
       border-radius: 8px;
       padding: 0.75rem 1rem;
-      color: #fca5a5;
+      color: #EF9F28;
       font-size: 0.85rem;
       margin-bottom: 1rem;
       display: none;
@@ -244,7 +244,7 @@ const PAGE_HTML = `<!DOCTYPE html>
 
     .done-hint {
       text-align: center;
-      color: #737373;
+      color: #7a8a9e;
       font-size: 0.85rem;
       font-family: "Inconsolata", monospace;
     }
@@ -252,7 +252,7 @@ const PAGE_HTML = `<!DOCTYPE html>
     .spinner {
       position: absolute;
       inset: 0;
-      background: rgba(26, 26, 26, 0.85);
+      background: rgba(30, 45, 74, 0.85);
       border-radius: 12px;
       display: none;
       align-items: center;
@@ -267,8 +267,8 @@ const PAGE_HTML = `<!DOCTYPE html>
       content: "";
       width: 28px;
       height: 28px;
-      border: 3px solid #333;
-      border-top-color: #22c55e;
+      border: 3px solid #2a3d5a;
+      border-top-color: #2EFFD1;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
     }
@@ -279,7 +279,7 @@ const PAGE_HTML = `<!DOCTYPE html>
 
     .divider {
       border: none;
-      border-top: 1px solid #262626;
+      border-top: 1px solid #2a3d5a;
       margin: 1.25rem 0;
     }
   </style>
@@ -287,11 +287,7 @@ const PAGE_HTML = `<!DOCTYPE html>
 <body>
   <div class="container">
     <div class="brand">
-      <div class="logo-placeholder">
-        <!-- mascot placeholder -->
-        <span style="opacity:0.4">&#x1f9a6;</span>
-      </div>
-      <h1>autter</h1>
+      <img src="/wordmark-dark.png" alt="autter" class="wordmark">
       <div class="subtitle">device authorization</div>
     </div>
 
@@ -563,7 +559,7 @@ const PAGE_HTML = `<!DOCTYPE html>
       // -- Done --
       function showDone(approved) {
         doneIcon.textContent = approved ? "\\u2713" : "\\u2717";
-        doneIcon.style.color = approved ? "#22c55e" : "#dc2626";
+        doneIcon.style.color = approved ? "#2EFFD1" : "#C47830";
         doneMsg.textContent = approved ? "Device authorized" : "Authorization denied";
         doneHint.textContent = "You can close this tab and return to your terminal.";
         show("done");
