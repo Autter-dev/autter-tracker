@@ -1,14 +1,11 @@
 src/
 tests/
-.github/
 .eslintrc.json
 .prettierrc
-.prettierignore
-.editorconfig
 tsconfig.json
+tsconfig.eslint.json
 tsup.config.ts
 vitest.config.ts
 coverage/
 .DS_Store
 AGENT.md
-MEMORY.md

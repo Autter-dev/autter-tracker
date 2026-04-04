@@ -2,7 +2,11 @@ import { parseArgs } from "node:util";
 
 import { initCommand } from "./commands/init";
 import { logCommand } from "./commands/log";
+import { loginCommand } from "./commands/login";
+import { logoutCommand } from "./commands/logout";
+import { statusCommand } from "./commands/status";
 import { statsCommand } from "./commands/stats";
+import { syncCommand } from "./commands/sync";
 import { uninstallCommand } from "./commands/uninstall";
 import { runHook } from "./hook";
 import { bold, dim } from "./utils";
@@ -20,6 +24,10 @@ ${bold("Commands:")}
   init          Install the post-commit hook in the current repo
   stats         Show AI commit statistics
   log           Show recent AI-detected commits
+  login         Authenticate with the autter server
+  logout        Clear stored authentication
+  status        Show auth and sync status
+  sync          Push tracked commits to the server
   uninstall     Remove the post-commit hook
 
 ${bold("Options:")}
@@ -28,6 +36,15 @@ ${bold("Options:")}
 
 ${dim("https://github.com/sagnikghosh/autter-tracker")}
 `);
+}
+
+function runAsync(fn: () => Promise<void>): void {
+  fn().catch((err) => {
+    process.stderr.write(
+      `Error: ${err instanceof Error ? err.message : String(err)}\n`,
+    );
+    process.exitCode = 1;
+  });
 }
 
 function main(): void {
@@ -51,6 +68,18 @@ function main(): void {
       logCommand(parseInt(values["limit"] as string, 10) || 20);
       break;
     }
+    case "login":
+      runAsync(loginCommand);
+      break;
+    case "logout":
+      logoutCommand();
+      break;
+    case "status":
+      runAsync(statusCommand);
+      break;
+    case "sync":
+      runAsync(syncCommand);
+      break;
     case "uninstall": {
       const { values } = parseArgs({
         args: process.argv.slice(3),
