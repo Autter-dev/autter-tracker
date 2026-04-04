@@ -82,6 +82,8 @@ interface TokenErrorResponse {
 
 export async function requestDeviceCode(): Promise<DeviceCodeResponse> {
   const { serverUrl, clientId } = getConfig();
+  console.log("serverUrl", serverUrl);
+  console.log("clientId", clientId);
   const url = `${serverUrl}/api/auth/device/code`;
 
   const res = await fetch(url, {
@@ -91,6 +93,8 @@ export async function requestDeviceCode(): Promise<DeviceCodeResponse> {
       client_id: clientId,
     }),
   });
+
+  console.log("res", res);
 
   if (!res.ok) {
     const text = await res.text();

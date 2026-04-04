@@ -3,6 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { deviceAuthorization } from "better-auth/plugins";
 
 import type { Database } from "./db";
+import * as dbSchema from "./db/schema";
 
 export interface AuthEnv {
   BETTER_AUTH_SECRET: string;
@@ -19,7 +20,16 @@ export function createAuth(db: Database, env: AuthEnv) {
   );
 
   return betterAuth({
-    database: drizzleAdapter(db, { provider: "pg" }),
+    database: drizzleAdapter(db, {
+      provider: "pg",
+      schema: {
+        user: dbSchema.user,
+        session: dbSchema.session,
+        account: dbSchema.account,
+        verification: dbSchema.verification,
+        deviceCode: dbSchema.deviceCode,
+      },
+    }),
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     basePath: "/api/auth",

@@ -11,7 +11,7 @@ interface CliConfig {
 }
 
 const DEFAULT_CONFIG: CliConfig = {
-  serverUrl: "https://api.autter.dev",
+  serverUrl: "http://localhost:8787",
   clientId: "autter-cli",
 };
 

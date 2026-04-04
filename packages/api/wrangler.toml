@@ -4,7 +4,11 @@ compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-BETTER_AUTH_URL = "https://api.autter.dev"
+BETTER_AUTH_URL = "http://localhost:8787"
+
+# Wrangler does not bind the parent shell's env to the Worker unless you use
+# `.dev.vars` / `.env` or set CLOUDFLARE_INCLUDE_PROCESS_ENV (see `npm run dev`).
+# If `packages/api/.dev.vars` exists, that file wins and process env is not merged.
 
 # Secrets are set via `wrangler secret put` or Doppler integration:
 # - BETTER_AUTH_SECRET

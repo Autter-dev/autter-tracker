@@ -52,11 +52,14 @@ Doppler keeps secrets synced across your team and environments. The repo include
    doppler secrets set GITHUB_CLIENT_ID="..."
    doppler secrets set GITHUB_CLIENT_SECRET="..."
    ```
-5. Prefix commands with `doppler run --` to inject secrets:
+5. Use `doppler run --` to inject secrets into commands that read `process.env` (e.g., Drizzle, the CLI):
    ```bash
-   doppler run -- npm run dev -w @autter/api
    doppler run -- npx drizzle-kit migrate
    doppler run -- npx autter-tracker login
+   ```
+6. For **Wrangler** (which reads `.dev.vars`, not `process.env`), use the dedicated script:
+   ```bash
+   npm run dev:doppler -w @autter/api
    ```
 
 > **Tip:** You can verify your secrets are loaded with `doppler secrets`.
@@ -143,13 +146,25 @@ npx drizzle-kit studio     # or: doppler run -- npx drizzle-kit studio
 npm run dev -w @autter/api
 ```
 
-Or with Doppler:
+This starts a local Cloudflare Workers dev server at `http://localhost:8787`. Wrangler reads variables from `wrangler.toml` and secrets from `.dev.vars` (or `.env`).
+
+#### Using Doppler with Wrangler
+
+Wrangler loads secrets into Worker bindings from a `.dev.vars` file — it does **not** read `process.env`. So `doppler run -- wrangler dev` alone won't work. Instead, use the `dev:doppler` script which downloads your Doppler secrets into `.dev.vars` before starting wrangler:
 
 ```bash
-doppler run -- npm run dev -w @autter/api
+npm run dev:doppler -w @autter/api
 ```
 
-This starts a local Cloudflare Workers dev server at `http://localhost:8787`. Wrangler reads variables from `wrangler.toml` and secrets from `.env` (or Doppler when prefixed).
+Or manually:
+
+```bash
+cd packages/api
+doppler secrets download --no-file --format env > .dev.vars
+wrangler dev
+```
+
+> **Note:** `.dev.vars` is gitignored and should never be committed.
 
 ### Build & Test the CLI
 

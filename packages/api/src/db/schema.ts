@@ -6,7 +6,9 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
-// ── Custom tables (Better Auth manages its own user/session/account/deviceCode tables) ──
+export * from "./auth-schema";
+
+// ── App tables ──
 
 export const commits = pgTable(
   "commits",

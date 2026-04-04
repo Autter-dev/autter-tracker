@@ -4,6 +4,7 @@ import { cors } from "hono/cors";
 import { createAuth } from "./auth";
 import { createDb } from "./db";
 import { requireAuth } from "./middleware/auth";
+import { devicePage } from "./pages/device";
 import { syncRoutes } from "./routes/sync";
 import { teamRoutes } from "./routes/teams";
 import type { Env } from "./types";
@@ -38,6 +39,9 @@ app.use(
     allowHeaders: ["Content-Type", "Authorization"],
   }),
 );
+
+// Device authorization page (browser-facing)
+app.get("/device", devicePage);
 
 // Better Auth handles all /api/auth/* routes (login, register, device flow, sessions)
 app.on(["POST", "GET"], "/api/auth/**", async (c) => {
