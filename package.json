@@ -1,10 +1,13 @@
 {
   "name": "autter-tracker",
   "version": "0.1.0",
-  "description": "A lightweight, extensible event tracking library with plugin support, batching, and retry logic",
+  "description": "Detects AI-assisted git commits and tracks them locally via a post-commit hook",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "autter-tracker": "./dist/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -32,13 +35,18 @@
     "clean": "rm -rf dist coverage"
   },
   "keywords": [
+    "ai",
+    "git",
+    "commit",
     "tracker",
-    "analytics",
-    "events",
-    "tracking",
-    "telemetry",
-    "plugin",
-    "batch",
+    "hook",
+    "claude",
+    "copilot",
+    "cursor",
+    "windsurf",
+    "devin",
+    "aider",
+    "cody",
     "typescript"
   ],
   "author": "",
@@ -51,6 +59,7 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
+    "@types/node": "^25.5.2",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "@vitest/coverage-v8": "^3.0.0",

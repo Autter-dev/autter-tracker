@@ -1,148 +1,105 @@
 # autter-tracker
 
-A lightweight, extensible event tracking library for Node.js and the browser. Features automatic batching, retry with exponential backoff, a plugin system, and full TypeScript support.
+Detects AI-assisted git commits and tracks them locally. Install as a dev dependency, run `init`, and every commit made by Claude Code, GitHub Copilot, Cursor, Windsurf, Devin, Aider, Cody, Gemini, or Amazon Q is automatically logged.
 
-## Features
+## How It Works
 
-- **Batching** — events are queued and flushed in configurable batches
-- **Retry with backoff** — failed flushes are retried with exponential backoff
-- **Plugin system** — transform, enrich, or filter events before they are sent
-- **Session & user tracking** — automatic session IDs, manual user identification
-- **TypeScript-first** — written in TypeScript with full type exports
-- **Tree-shakeable** — ESM and CJS dual-package output
+1. A `post-commit` git hook runs after every commit
+2. The hook inspects the commit message for AI tool signatures (co-author trailers, `Generated-By` tags, etc.)
+3. Detected AI commits are stored locally in `.autter/commits.json` (gitignored)
 
 ## Installation
 
 ```bash
-npm install autter-tracker
+npm install --save-dev autter-tracker
 ```
 
-## Quick Start
+## Setup
+
+```bash
+npx autter-tracker init
+```
+
+This installs a `post-commit` hook and creates the `.autter/` tracking directory. If a `post-commit` hook already exists, it appends rather than overwriting.
+
+## Commands
+
+### `autter-tracker init`
+
+Installs the post-commit hook in the current repository.
+
+### `autter-tracker stats`
+
+Shows AI commit statistics — total counts, percentage of AI commits, and breakdown by tool.
+
+```
+  AI Commit Statistics
+
+  Total commits in repo:  142
+  AI-assisted commits:    37 (26.1%)
+  Tracking since:         3/15/2026 — 4/4/2026
+
+  Breakdown by tool
+  Claude Code           22  ████████████
+  GitHub Copilot         9  █████
+  Cursor                 6  ███
+```
+
+### `autter-tracker log`
+
+Shows recent AI-detected commits. Use `--limit` / `-n` to control how many.
+
+```bash
+npx autter-tracker log -n 10
+```
+
+### `autter-tracker uninstall`
+
+Removes the post-commit hook. Add `--clean` to also delete the `.autter/` data directory.
+
+```bash
+npx autter-tracker uninstall --clean
+```
+
+## Detected AI Tools
+
+| Tool           | Detection Method                                                                       |
+| -------------- | -------------------------------------------------------------------------------------- |
+| Claude Code    | `Co-Authored-By: Claude`, `Generated-By: PostHog Code`, `Generated with [Claude Code]` |
+| GitHub Copilot | `Co-Authored-By: Copilot`, `github-copilot[bot]`                                       |
+| Cursor         | `Generated-By: Cursor`, `[Cursor]`                                                     |
+| Windsurf       | `Co-Authored-By: Windsurf`, `Codeium`                                                  |
+| Devin          | `Co-Authored-By: Devin`, `devin-ai`                                                    |
+| Aider          | `aider:` prefix, `Co-Authored-By: aider`                                               |
+| Cody           | `Co-Authored-By: Cody`, `Sourcegraph`                                                  |
+| Gemini         | `Co-Authored-By: Gemini`                                                               |
+| Amazon Q       | `Co-Authored-By: Amazon Q`                                                             |
+| Unknown AI     | Any `Generated-By:` trailer                                                            |
+
+## Programmatic API
 
 ```typescript
-import { Tracker } from "autter-tracker";
+import { detectAiTool, readStorage, BUILTIN_PATTERNS } from "autter-tracker";
 
-const tracker = new Tracker({
-  transport: async (events) => {
-    await fetch("https://analytics.example.com/v1/events", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(events),
-    });
-  },
-  batchSize: 10,
-  flushInterval: 5000,
-});
+// Detect AI tool from a commit message
+const result = detectAiTool("fix: bug\n\nCo-Authored-By: Claude");
+// { tool: "claude-code", displayName: "Claude Code", matchedPattern: "..." }
 
-// Identify the user
-tracker.identify("user-42");
-
-// Track events
-tracker.track("page_view", { url: "/dashboard" });
-tracker.track("button_click", { button: "upgrade", plan: "pro" });
-
-// Flush remaining events on shutdown
-await tracker.destroy();
+// Read stored commits
+const data = readStorage("/path/to/repo");
+console.log(data.commits);
 ```
-
-## Configuration
-
-| Option          | Type                                        | Default  | Description                                 |
-| --------------- | ------------------------------------------- | -------- | ------------------------------------------- |
-| `transport`     | `(events: TrackerEvent[]) => Promise<void>` | required | Delivers events to your backend             |
-| `batchSize`     | `number`                                    | `10`     | Max events per flush                        |
-| `flushInterval` | `number`                                    | `5000`   | Auto-flush interval in ms (0 to disable)    |
-| `maxRetries`    | `number`                                    | `3`      | Retry attempts for failed flushes           |
-| `retryDelay`    | `number`                                    | `1000`   | Base delay in ms for exponential backoff    |
-| `plugins`       | `TrackerPlugin[]`                           | `[]`     | Plugins to process events                   |
-| `onFlush`       | `(events) => void`                          | —        | Called after a successful flush             |
-| `onError`       | `(error, events) => void`                   | —        | Called when a flush fails after all retries |
-
-## Plugins
-
-Plugins intercept events before they enter the queue. Each plugin has a `process` function that receives an event and returns a (possibly modified) event or `null` to drop it.
-
-### Built-in Plugins
-
-```typescript
-import { createConsolePlugin, createTimestampPlugin, createFilterPlugin } from "autter-tracker";
-
-const tracker = new Tracker({
-  transport: myTransport,
-  plugins: [
-    createConsolePlugin(), // logs every event to the console
-    createTimestampPlugin(), // enriches events with _enrichedAt
-    createFilterPlugin({
-      // drops events by name
-      blockList: ["debug_event"],
-    }),
-  ],
-});
-```
-
-### Custom Plugin
-
-```typescript
-import type { TrackerPlugin } from "autter-tracker";
-
-const myPlugin: TrackerPlugin = {
-  name: "add-env",
-  process: (event) => ({
-    ...event,
-    properties: {
-      ...event.properties,
-      env: process.env.NODE_ENV,
-    },
-  }),
-};
-
-tracker.addPlugin(myPlugin);
-```
-
-## API
-
-### `new Tracker(config)`
-
-Creates a new tracker instance.
-
-### `tracker.track(name, properties?)`
-
-Queues an event. Auto-flushes when `batchSize` is reached.
-
-### `tracker.identify(userId)`
-
-Attaches a user ID to all subsequent events.
-
-### `tracker.resetSession()`
-
-Generates a new session ID.
-
-### `tracker.flush()`
-
-Manually sends all queued events.
-
-### `tracker.destroy()`
-
-Flushes remaining events and stops the auto-flush timer. No events are tracked after this call.
-
-### `tracker.addPlugin(plugin)` / `tracker.removePlugin(name)`
-
-Dynamically add or remove plugins at runtime.
-
-### `tracker.getQueueSize()`
-
-Returns the number of events currently in the queue.
 
 ## Development
 
 ```bash
-npm install          # install dependencies
-npm run build        # build the package
-npm test             # run tests
-npm run test:coverage # run tests with coverage
-npm run lint         # run ESLint
-npm run format       # run Prettier
-npm run typecheck    # run TypeScript type checking
+npm install
+npm run build
+npm test
+npm run test:coverage
+npm run lint
+npm run format
+npm run typecheck
 ```
 
 ## License

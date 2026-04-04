@@ -1,16 +1,31 @@
-let sessionCounter = 0;
+const noColor = "NO_COLOR" in process.env;
 
-export function generateId(): string {
-  const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 10);
-  sessionCounter++;
-  return `${timestamp}-${random}-${sessionCounter.toString(36)}`;
+function wrap(code: string, text: string): string {
+  if (noColor) return text;
+  return `\x1b[${code}m${text}\x1b[0m`;
 }
 
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+export const bold = (t: string) => wrap("1", t);
+export const dim = (t: string) => wrap("2", t);
+export const green = (t: string) => wrap("32", t);
+export const yellow = (t: string) => wrap("33", t);
+export const cyan = (t: string) => wrap("36", t);
+export const red = (t: string) => wrap("31", t);
+
+export function truncate(str: string, maxLen: number): string {
+  if (str.length <= maxLen) return str;
+  return str.slice(0, maxLen - 1) + "\u2026";
 }
 
-export function now(): number {
-  return Date.now();
+export function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export function padRight(str: string, len: number): string {
+  return str.length >= len ? str : str + " ".repeat(len - str.length);
 }

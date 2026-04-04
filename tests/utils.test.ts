@@ -1,35 +1,41 @@
 import { describe, it, expect } from "vitest";
 
-import { generateId, now, sleep } from "../src/utils";
+import { truncate, formatDate, padRight } from "../src/utils";
 
-describe("generateId()", () => {
-  it("should return a non-empty string", () => {
-    const id = generateId();
-    expect(id).toBeTypeOf("string");
-    expect(id.length).toBeGreaterThan(0);
+describe("truncate", () => {
+  it("returns string unchanged when within limit", () => {
+    expect(truncate("hello", 10)).toBe("hello");
   });
 
-  it("should generate unique ids", () => {
-    const ids = new Set(Array.from({ length: 100 }, () => generateId()));
-    expect(ids.size).toBe(100);
+  it("truncates and adds ellipsis", () => {
+    const result = truncate("a very long string here", 10);
+    expect(result).toHaveLength(10);
+    expect(result.endsWith("\u2026")).toBe(true);
   });
-});
 
-describe("now()", () => {
-  it("should return a number close to Date.now()", () => {
-    const before = Date.now();
-    const result = now();
-    const after = Date.now();
-    expect(result).toBeGreaterThanOrEqual(before);
-    expect(result).toBeLessThanOrEqual(after);
+  it("handles exact length", () => {
+    expect(truncate("12345", 5)).toBe("12345");
   });
 });
 
-describe("sleep()", () => {
-  it("should resolve after the given duration", async () => {
-    const start = Date.now();
-    await sleep(50);
-    const elapsed = Date.now() - start;
-    expect(elapsed).toBeGreaterThanOrEqual(40); // allow small margin
+describe("formatDate", () => {
+  it("formats ISO date string", () => {
+    const result = formatDate("2026-04-04T10:00:00Z");
+    expect(result).toContain("2026");
+    expect(result).toContain("Apr");
+  });
+});
+
+describe("padRight", () => {
+  it("pads shorter strings", () => {
+    expect(padRight("hi", 5)).toBe("hi   ");
+  });
+
+  it("returns string unchanged when already at length", () => {
+    expect(padRight("hello", 5)).toBe("hello");
+  });
+
+  it("returns string unchanged when longer than length", () => {
+    expect(padRight("hello world", 5)).toBe("hello world");
   });
 });

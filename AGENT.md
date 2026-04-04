@@ -1,72 +1,70 @@
 # Agent Guide — autter-tracker
 
-This file is intended for AI agents working on this codebase. It describes the project structure, conventions, and workflows needed to contribute effectively.
+This file helps AI agents working on this codebase understand its structure, conventions, and workflows.
 
 ## Project Overview
 
-`autter-tracker` is a TypeScript npm package that provides lightweight, pluggable event tracking with batching and retry logic.
+`autter-tracker` is a CLI tool + library that detects AI-assisted git commits via a post-commit hook and tracks them locally. Zero runtime dependencies — uses only Node.js built-ins.
 
 ## Directory Structure
 
 ```
 autter-tracker/
 ├── src/
-│   ├── index.ts           # Public API re-exports
-│   ├── tracker.ts         # Core Tracker class (batching, retry, lifecycle)
-│   ├── types.ts           # All TypeScript interfaces and types
-│   ├── utils.ts           # Utility functions (ID generation, sleep, now)
-│   └── plugins/
-│       ├── index.ts           # Plugin barrel exports
-│       ├── console-plugin.ts  # Logs events to console
-│       ├── timestamp-plugin.ts# Enriches events with timing data
-│       └── filter-plugin.ts   # Allow/block list filtering
+│   ├── cli.ts              # CLI entry point (bin), dispatches commands
+│   ├── index.ts            # Programmatic API re-exports
+│   ├── types.ts            # TypeScript interfaces (AiCommit, StorageData, etc.)
+│   ├── detector.ts         # AI pattern matching engine (BUILTIN_PATTERNS)
+│   ├── git.ts              # Git shell helpers (execFileSync wrappers)
+│   ├── hook.ts             # Post-commit hook logic
+│   ├── storage.ts          # Local JSON storage (.autter/commits.json)
+│   ├── utils.ts            # Terminal formatting (colors, truncate, pad)
+│   └── commands/
+│       ├── init.ts         # Install post-commit hook
+│       ├── stats.ts        # Show AI commit statistics
+│       ├── log.ts          # Show recent AI commits
+│       └── uninstall.ts    # Remove hook
 ├── tests/
-│   ├── tracker.test.ts    # Core tracker tests
-│   ├── plugins.test.ts    # Plugin tests
-│   └── utils.test.ts      # Utility tests
-├── tsconfig.json          # TypeScript configuration
-├── tsup.config.ts         # Build configuration (CJS + ESM)
-├── vitest.config.ts       # Test configuration with coverage thresholds
-├── .eslintrc.json         # ESLint rules
-├── .prettierrc            # Prettier formatting rules
-└── package.json           # Dependencies and scripts
+│   ├── detector.test.ts    # AI detection pattern tests
+│   ├── storage.test.ts     # JSON storage tests (uses real temp dirs)
+│   ├── git.test.ts         # Git helper tests (mocked execFileSync)
+│   ├── hook.test.ts        # Hook integration tests (mocked git module)
+│   └── utils.test.ts       # Utility function tests
+├── tsconfig.json           # TypeScript configuration (Node.js target)
+├── tsup.config.ts          # Dual build: library (CJS+ESM) + CLI (CJS with shebang)
+├── vitest.config.ts        # Test config with 80% coverage thresholds
+├── .eslintrc.json          # ESLint with strict TypeScript rules
+└── .prettierrc             # Code formatting rules
 ```
 
 ## Key Commands
 
-| Command                 | Purpose                         |
-| ----------------------- | ------------------------------- |
-| `npm run build`         | Build CJS + ESM output to dist/ |
-| `npm test`              | Run the test suite              |
-| `npm run test:coverage` | Run tests with V8 coverage      |
-| `npm run lint`          | Lint source and test files      |
-| `npm run lint:fix`      | Auto-fix lint issues            |
-| `npm run format`        | Format all files with Prettier  |
-| `npm run typecheck`     | Run tsc with no emit            |
+| Command                 | Purpose                        |
+| ----------------------- | ------------------------------ |
+| `npm run build`         | Build library + CLI to dist/   |
+| `npm test`              | Run test suite                 |
+| `npm run test:coverage` | Run tests with V8 coverage     |
+| `npm run lint`          | Lint source and test files     |
+| `npm run format`        | Format all files with Prettier |
+| `npm run typecheck`     | Run tsc with no emit           |
 
 ## Conventions
 
-- **No `any`** — the ESLint config warns on `@typescript-eslint/no-explicit-any`. Use `unknown` and narrow.
-- **Imports** — use path aliases relative to `src/`. Imports are sorted by group with `eslint-plugin-import`.
-- **Tests** — each source file has a corresponding test file in `tests/`. Use Vitest with `vi.fn()` for mocks.
-- **Plugins** — every plugin is a factory function (`create*Plugin`) returning `TrackerPlugin`. It must have a unique `name` and a `process` function.
-- **Exports** — all public API surfaces are re-exported from `src/index.ts`. Internal helpers should not be exported.
+- **Zero dependencies** — only `node:fs`, `node:path`, `node:child_process`, `node:util` at runtime.
+- **Git interactions** — always use `execFileSync` (not `exec`) to avoid shell injection. Located in `src/git.ts`.
+- **Tests** — `detector.test.ts` and `utils.test.ts` are pure unit tests. `storage.test.ts` uses real temp directories. `git.test.ts` and `hook.test.ts` mock `execFileSync` or the git module.
+- **Exports** — public API in `src/index.ts`. CLI in `src/cli.ts`. Commands are not directly exported.
 
-## Adding a New Plugin
+## Adding a New AI Tool Pattern
 
-1. Create `src/plugins/my-plugin.ts` with a `createMyPlugin()` factory function.
-2. Re-export it from `src/plugins/index.ts`.
-3. Re-export it from `src/index.ts`.
-4. Add tests in `tests/plugins.test.ts` (or a new file for complex plugins).
-
-## Coverage Thresholds
-
-The project enforces 80% coverage across branches, functions, lines, and statements. All PRs must maintain this.
+1. Add a new `AiPattern` entry to `BUILTIN_PATTERNS` in `src/detector.ts`.
+2. Add test cases in `tests/detector.test.ts`.
+3. Update the table in `README.md`.
 
 ## Build Output
 
-`tsup` produces:
+tsup produces:
 
-- `dist/index.js` — CommonJS
-- `dist/index.mjs` — ESM
+- `dist/index.js` + `dist/index.mjs` — library (CJS + ESM)
 - `dist/index.d.ts` — TypeScript declarations
+- `dist/cli.js` — CLI binary with `#!/usr/bin/env node` shebang
