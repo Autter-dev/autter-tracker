@@ -4,6 +4,11 @@ export interface Env {
   DATABASE_URL: string;
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  RESEND_API_KEY?: string;
+  RESEND_FROM_EMAIL?: string;
+  RESEND_REPLY_TO_EMAIL?: string;
   VALID_CLIENT_IDS?: string;
 }
 
