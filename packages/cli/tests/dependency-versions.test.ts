@@ -42,4 +42,20 @@ describe("CVE dependency bumps", () => {
   it.each(expected)("%s resolves to fixed version %s", (name, version) => {
     expect(resolvedVersion(name), `resolved version of ${name}`).toBe(version);
   });
+
+  it("glob and minimatch (via test-exclude) resolve to CVE-fixed versions", () => {
+    // GHSA-3g3m-2fjr-6pw4 (glob) and GHSA-g3hv-75wg-m249 (minimatch)
+    // are fixed in glob@14.0.2 and minimatch@11.0.1 respectively.
+    const lock = JSON.parse(
+      readFileSync(lockfilePath(), "utf8"),
+    ) as { packages: Record<string, { version?: string }> };
+    expect(
+      lock.packages["node_modules/test-exclude/node_modules/glob"]?.version,
+      "resolved version of glob (transitive via test-exclude)",
+    ).toBe("14.0.2");
+    expect(
+      lock.packages["node_modules/test-exclude/node_modules/glob/node_modules/minimatch"]?.version,
+      "resolved version of minimatch (transitive via test-exclude/glob)",
+    ).toBe("11.0.1");
+  });
 });
